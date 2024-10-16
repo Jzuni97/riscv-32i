@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 08/23/2024 11:15:24 PM
+// Create Date: 09/09/2024 04:06:04 PM
 // Design Name: 
-// Module Name: core
+// Module Name: adder
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,10 +20,9 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module core(
-
+module adder #(parameter WIDTH = 32) (
+    input wire [WIDTH-1:0] a, b,
+    output wire [WIDTH-1:0] y
 );
-    
-    // Program counter
-    reg [31:0] pc;
+    assign y = $signed(a) + $signed(b);
 endmodule
