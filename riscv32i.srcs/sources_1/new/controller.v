@@ -89,9 +89,9 @@ module controller(
         .branchD(branchD),
         .jumpD(jumpD),
         .result_srcE(result_srcE),
+        .reg_writeE(reg_writeE),
         .alu_controlE(alu_controlE),
         .alu_srcE(alu_srcE),
-        .reg_writeE(reg_writeE),
         .mem_writeE(mem_writeE),
         .branchE(branchE),
         .jumpE(jumpE)
@@ -117,7 +117,7 @@ module controller(
         .reg_writeW(reg_writeW)
     );
     
-    // signals outside controllers (FIX Use the pipelined values)
+    // signals outside controllers
     assign pc_srcE = jumpE | (branchE & zeroE);
     assign pc_jal_srcE = (opcode == 7'b1100111) ? 1 : 0; // jalr
 endmodule
