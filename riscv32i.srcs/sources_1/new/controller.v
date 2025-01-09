@@ -24,18 +24,19 @@
 
 
 module controller(
+    input wire clk, reset,
+
     input wire [31:0] instruction,
-    input wire zero,                // zero flag from alu at IExecute stage
-    output wire [1:0] result_src,   // the data that will be written to the register file (alu_result, mem_read, pc+4)
-    output wire [3:0] alu_control,
-    output wire [1:0] imm_src,
-    output wire alu_src,            // alu source
-    output wire pc_src,             // pc source
-    output wire pc_jal_src,         // jump source (jal vs jalr)
-    output wire reg_write,          // register file write flag
-    output wire mem_write,
-    output wire branch,
-    output wire jump
+    input wire zeroE,                           // zero flag from alu at IExecute stage
+    
+    output wire [1:0] result_srcW,              // the data that will be written to the register file (alu_result, mem_read, pc+4)
+    output wire [3:0] alu_controlE,
+    output wire [1:0] imm_srcD,
+    output wire alu_srcE,                       // alu source
+    output wire pc_srcE,                        // pc source
+    output wire pc_jal_srcE,                    // jump source (jal vs jalr)
+    output wire reg_writeM, reg_writeW,         // register file write flag
+    output wire mem_writeM
 );
     // Extract relevant fields from instruction
     wire [6:0] opcode = instruction[6:0];
@@ -43,34 +44,80 @@ module controller(
     wire [6:0] funct7 = instruction[31:25];
     
     // Internal ALU control signal for ALU controller
-    wire [1:0] alu_op;
+    wire [1:0] alu_opD;
+    
+    // Pipelined registers
+    wire [1:0] result_srcD, result_srcE, result_srcM;
+    wire [3:0] alu_controlD;
+    wire alu_srcD;
+    wire reg_writeD, reg_writeE;
+    wire mem_writeD, mem_writeE;
+    wire branchD, branchE, jumpD, jumpE;
     
     // main decoder
     controller_main cm(
         .opcode(opcode),
         .funct3(funct3),
-        .result_src(result_src),
-        .imm_src(imm_src),
-        .alu_src(alu_src),
-        .reg_write(reg_write),
-        .mem_write(mem_write),
-        .branch(branch),
-        .jump(jump),
-        .alu_op(alu_op)             // internal operation signal for alu controller
+        .result_src(result_srcD),
+        .imm_src(imm_srcD),
+        .alu_src(alu_srcD),
+        .reg_write(reg_writeD),
+        .mem_write(mem_writeD),
+        .branch(branchD),
+        .jump(jumpD),
+        .alu_op(alu_opD)             // internal operation signal for alu controller
     );
     
     // alu decoder
     controller_alu calu(
-        .alup_op(alu_op),
+        .alup_op(alu_opD),
         .opcode(opcode),
         .funct3(funct3),
         .funct7(funct7),
-        .alu_control(alu_control)
+        .alu_control(alu_controlD)
     );
     
-    // !!!!!!!!!!! TODO Implement pipelines and incorporate here
+    // pipelined datapath
+    c_id_iex c_pipereg0(
+        .clk(clk),
+        .reset(reset),
+        .result_srcD(result_srcD),
+        .alu_controlD(alu_controlD),
+        .alu_srcD(alu_srcD),
+        .reg_writeD(reg_writeD),
+        .mem_writeD(mem_writeD),
+        .branchD(branchD),
+        .jumpD(jumpD),
+        .result_srcE(result_srcE),
+        .alu_controlE(alu_controlE),
+        .alu_srcE(alu_srcE),
+        .reg_writeE(reg_writeE),
+        .mem_writeE(mem_writeE),
+        .branchE(branchE),
+        .jumpE(jumpE)
+    );
     
-    // signals outside controllers
-    assign pc_src = jump | (branch & zero);
-    assign pc_jal_src = (opcode == 7'b1100111) ? 1 : 0; // jalr
+    c_iex_mem c_pipereg1(
+        .clk(clk),
+        .reset(reset),
+        .result_srcE(result_srcE),
+        .reg_writeE(reg_writeE),
+        .mem_writeE(mem_writeE),
+        .result_srcM(result_srcM),
+        .reg_writeM(reg_writeM),
+        .mem_writeM(mem_writeM)
+    );
+    
+    c_mem_iwb c_pipereg2(
+        .clk(clk),
+        .reset(reset),
+        .result_srcM(result_srcM),
+        .reg_writeM(reg_writeM),
+        .result_srcW(result_srcW),
+        .reg_writeW(reg_writeW)
+    );
+    
+    // signals outside controllers (FIX Use the pipelined values)
+    assign pc_srcE = jumpE | (branchE & zeroE);
+    assign pc_jal_srcE = (opcode == 7'b1100111) ? 1 : 0; // jalr
 endmodule

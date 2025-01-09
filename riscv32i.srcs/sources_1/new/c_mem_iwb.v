@@ -3,19 +3,16 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 09/09/2024 11:38:20 AM
+// Create Date: 01/09/2025 12:03:16 AM
 // Design Name: 
-// Module Name: if_id
+// Module Name: c_mem_iwb
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
 // Description: 
-// 
+//  Controller pipeline register between IMem and IWrite
 // Dependencies: 
 // 
-// TODO:
-//  Consider adding a sync clear and enable signal
-//  I believe these come from the hazard unit
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
@@ -23,24 +20,25 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module if_id(
-    input wire clk,
-    input wire reset,
+module c_mem_iwb(
+    input wire clk, reset,
     
-    input wire [31:0] instrF, pcF, pc_plus4F,
-    output reg [31:0] instrD, pcD, pc_plus4D
+    input wire [1:0] result_srcM,
+    input wire reg_writeM,
+    
+    output reg [1:0] result_srcW,
+    output reg reg_writeW
 );
+    
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            instrD <= 0;
-            pcD <= 0;
-            pc_plus4D <= 0;
+            result_srcW <= 0;
+            reg_writeW <= 0;
         end
         else begin
-            instrD <= instrF;
-//            pcD <= pcD;
-            pcD <= pcF;
-            pc_plus4D <= pc_plus4F;
+            result_srcW <= result_srcM;
+            reg_writeW <= reg_writeM;
         end
     end
+    
 endmodule

@@ -3,19 +3,16 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 09/09/2024 11:38:20 AM
+// Create Date: 01/09/2025 12:03:16 AM
 // Design Name: 
-// Module Name: if_id
+// Module Name: c_iex_mem
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
 // Description: 
-// 
+//  Controller pipeline register between IExecute and IMem
 // Dependencies: 
 // 
-// TODO:
-//  Consider adding a sync clear and enable signal
-//  I believe these come from the hazard unit
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
@@ -23,24 +20,27 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module if_id(
-    input wire clk,
-    input wire reset,
+module c_iex_mem(
+    input wire clk, reset,
     
-    input wire [31:0] instrF, pcF, pc_plus4F,
-    output reg [31:0] instrD, pcD, pc_plus4D
+    input wire [1:0] result_srcE,
+    input wire reg_writeE, mem_writeE,
+    
+    output reg [1:0] result_srcM,
+    output reg reg_writeM, mem_writeM
 );
+    
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            instrD <= 0;
-            pcD <= 0;
-            pc_plus4D <= 0;
+            result_srcM <= 0;
+            reg_writeM <= 0;
+            mem_writeM <= 0;
         end
         else begin
-            instrD <= instrF;
-//            pcD <= pcD;
-            pcD <= pcF;
-            pc_plus4D <= pc_plus4F;
+            result_srcM <= result_srcE;
+            reg_writeM <= reg_writeE;
+            mem_writeM <= mem_writeE;
         end
     end
+
 endmodule

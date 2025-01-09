@@ -68,7 +68,7 @@ module datapath(
     adder pcadd4(pc, 32'd4, pc_plus4F);
     
     //  --- Instruction Fetch-Decode Pipeline Register (IF->ID) ---
-    if_id pipreg0(
+    if_id pipereg0(
         clk,
         reset,
         mem_instr,
